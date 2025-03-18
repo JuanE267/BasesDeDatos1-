@@ -3,6 +3,8 @@
 #include <string.h>
 
 
+
+// cambiar estructura a nombre y longitud
 typedef struct metadata {
    int numero;
    char descripcion[30];
