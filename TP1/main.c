@@ -17,7 +17,7 @@ void mostrarArchivoMetadata();
 int main(void) {
 
    int eleccion;
-   printf("1. Crear archivo metadata\n");
+   printf("1. Crear archivo metadata (Si existe, sobreescribe)\n");
    printf("2. Crear nuevo campo(alta)\n");
    printf("3. Mostrar archivo metadata\n");
    printf("Ingrese una operacion:  ");
@@ -35,7 +35,9 @@ int main(void) {
 }
 
 void crearArchivoMetadata() {
-   FILE* fptr = fopen("metadata.txt", "w");
+
+   remove("metadata.dat");
+   FILE* fptr = fopen("metadata.dat", "w");
 
    if (fptr != NULL) {
       printf("Archivo de metadata creado.\n");
@@ -46,7 +48,7 @@ void crearArchivoMetadata() {
 }
 void altaDeCampo() {
 
-   FILE* fptr = fopen("metadata.txt", "a");
+   FILE* fptr = fopen("metadata.dat", "a");
 
    // en cada linea de la metadata debo definir numero desc tipo y long
    metadata data;
@@ -70,7 +72,7 @@ void altaDeCampo() {
 
 }
 void mostrarArchivoMetadata() {
-   FILE* fptr = fopen("metadata.txt", "r");
+   FILE* fptr = fopen("metadata.dat", "r");
 
    printf("---------- Campos ----------\n");
    metadata data;
