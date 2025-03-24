@@ -1,93 +1,199 @@
 #include <unistd.h> // For getcwd
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 
-
-
-// cambiar estructura a nombre y longitud
 typedef struct metadata {
-   int numero;
-   char descripcion[30];
-   char tipo; // int O string (i o s)
-   int longitud;
+    char nombre[30];
+    int longitud;
 } metadata;
 
+//-------------------------------
+
 void altaDeCampo();
+
 void crearArchivoMetadata();
+
 void mostrarArchivoMetadata();
 
+void definirEstructura();
+
+bool estaDefinida();
+
+bool comprobarExistencia();
+
+//-------------------------------
 int main(void) {
+    int eleccion;
+    char salir;
+    char ch;
+    do {
+        printf("\n------------------------------------------------------------\n");
+        printf("1. Crear archivo metadata (Si existe, sobreescribe)\n");
+        printf("2. Crear nuevo campo(alta)\n");
+        printf("3. Mostrar archivo metadata\n");
+        printf("\nIngrese una operacion:  ");
 
-   int eleccion;
-   printf("1. Crear archivo metadata (Si existe, sobreescribe)\n");
-   printf("2. Crear nuevo campo(alta)\n");
-   printf("3. Mostrar archivo metadata\n");
-   printf("Ingrese una operacion:  ");
-   scanf("%d", &eleccion);
+        while (scanf(" %d", &eleccion) != 1 || (eleccion != 1 && eleccion != 2 && eleccion != 3) || getchar() != '\n') {
+            while ((ch = getchar()) != '\n' && ch != EOF);
+            printf("Ingrese [1,2,3]: ");
+        }
 
-   if (eleccion == 1) {
-      crearArchivoMetadata();
-   } else if (eleccion == 2) {
-      altaDeCampo();
-   }else if (eleccion == 3) {
-      mostrarArchivoMetadata();
-   }
+        if (eleccion == 1) {
+            crearArchivoMetadata();
+        } else if (eleccion == 2) {
+            if (comprobarExistencia()) {
+                if (estaDefinida()) {
+                    printf("La estructura ya ha sido definida!!!");
+                } else {
+                    altaDeCampo();
+                }
+            } else {
+                printf("\nDebe crear el archivo metadata antes de realizar operaciones!");
+            }
+        } else if (eleccion == 3) {
+            if (comprobarExistencia()) {
+                mostrarArchivoMetadata();
+            } else {
+                printf("\nDebe crear el archivo metadata antes de realizar operaciones!");
+            }
+        }
 
-   return 0;
+        printf("\nDesea realizar otra operacion? [y,n]: ");
+        while (scanf(" %c", &salir) != 1 || (salir != 'y' && salir != 'Y' && salir != 'n' && salir != 'N')  || getchar() != '\n') {
+            while ((ch = getchar()) != '\n' && ch != EOF);
+            printf("Ingrese [y,n]: ");
+        }
+    } while (salir == 'y' || salir == 'Y');
+
+    if (comprobarExistencia() && !estaDefinida()) {
+        definirEstructura();
+        printf("ESTRUCTURA DE DATOS DEFINIDA!\n");
+    }
+    return 0;
 }
 
 void crearArchivoMetadata() {
+    remove("metadata.dat");
+    FILE *fptr = fopen("metadata.dat", "w");
 
-   remove("metadata.dat");
-   FILE* fptr = fopen("metadata.dat", "w");
-
-   if (fptr != NULL) {
-      printf("Archivo de metadata creado.\n");
-   } else {
-      printf("Error el crear el archivo de metadata\n");
-   }
-   fclose(fptr);
+    if (fptr != NULL) {
+        printf("Archivo de metadata creado.\n");
+    } else {
+        printf("Error el crear el archivo de metadata\n");
+    }
+    fclose(fptr);
 }
+
 void altaDeCampo() {
+    char ch;
+    FILE *fptr = fopen("metadata.dat", "a");
 
-   FILE* fptr = fopen("metadata.dat", "a");
+    if (!fptr) {
+        printf("No se pudo abrir el archivo para añadir el campo.\n");
+        return;
+    }
 
-   // en cada linea de la metadata debo definir numero desc tipo y long
-   metadata data;
+    // en cada linea de la metadata debo definir numero desc tipo y long
+    metadata data;
 
-   //data numero
-   printf("Ingrese el numero: ");
-   scanf("%d", &data.numero);
-   //data descripcion
-   printf("Ingrese la descripcion: ");
-   scanf("%s", data.descripcion);
-   //data tipo
-   printf("Ingrese el tipo: ");
-   scanf(" %c", &data.tipo);
-   //data longitud
-   printf("Ingrese la longitud: ");
-   scanf("%d", &data.longitud);
+    //data descripcion
+    printf("Ingrese el nombre del campo: ");
+    scanf("%s", data.nombre);
+    //data longitud
+    printf("\nIngrese la longitud: ");
+    while (scanf("%d", &data.longitud) != 1) {
+        while ((ch = getchar()) != '\n' && ch != EOF);
+        printf("La longitud debe ser un valor numerico\n");
+        printf("Ingrese nuevamente: ");
+    }
 
-   fprintf(fptr, "%d,%s,%c,%d \n", data.numero, data.descripcion, data.tipo, data.longitud);
 
-   fclose(fptr);
-
+    fprintf(fptr, "%s,%d\n", data.nombre, data.longitud);
+    fclose(fptr);
 }
+
 void mostrarArchivoMetadata() {
-   FILE* fptr = fopen("metadata.dat", "r");
 
-   printf("---------- Campos ----------\n");
-   metadata data;
-   char buffer[100];
+    FILE *fptr = fopen("metadata.dat", "r");
 
-   while (fgets(buffer, 100, fptr)) {
-      sscanf(buffer, "%d,%[^,], %c,%d", &data.numero, data.descripcion, &data.tipo, &data.longitud);
+    if (fptr == NULL) {
+        printf("Error al abrir el archivo.\n");
+        return;
+    }
 
-      printf("Numero -> %d\n", data.numero);
-      printf("Descripcion -> %s\n", data.descripcion);
-      printf("Tipo -> %c\n", data.tipo);
-      printf("Longitud -> %d\n", data.longitud);
-      printf("----------------------------\n");
-   };
-   fclose(fptr);
+    printf("---------- Campos ----------\n");
+    metadata data;
+    char buffer[100];
+    char lineas[100][100];
+    int cantidadLineas = 0;
+
+    // Leer todas las líneas y almacenarlas
+    while (fgets(buffer, sizeof(buffer), fptr)) {
+        strcpy(lineas[cantidadLineas], buffer);
+        cantidadLineas++;
+    }
+
+    // Mostrar todas las líneas, excepto la última
+    for (int i = 0; i < cantidadLineas; i++) {
+
+        if (i == cantidadLineas - 1 && strchr(lineas[i], '*') != NULL) {
+            // Si es la última línea y contiene '*', la omitimos
+            continue;
+        }
+
+        sscanf(lineas[i], "%[^,],%d", data.nombre, &data.longitud);
+        printf("Nombre de campo -> %s\n", data.nombre);
+        printf("Longitud -> %d\n", data.longitud);
+        printf("----------------------------\n");
+    }
+
+    fclose(fptr);
+}
+
+void definirEstructura() {
+    FILE *fptr = fopen("metadata.dat", "a");
+    fprintf(fptr, "*");
+    fclose(fptr);
+}
+
+bool estaDefinida() {
+    FILE *fptr = fopen("metadata.dat", "r");
+
+    if (!fptr) {
+        return false;
+    }
+
+
+    fseek(fptr, 0, SEEK_END);
+    long pos = ftell(fptr);
+
+    if (pos == 0) {
+        fclose(fptr);
+        return false;
+    }
+
+
+    fseek(fptr, pos - 1, SEEK_SET);
+    char ch;
+    while (ftell(fptr) > 0 && (ch = getc(fptr)) != '\n') {
+        fseek(fptr, -2, SEEK_CUR);
+    }
+
+    if (getc(fptr) == '*') {
+        fclose(fptr);
+        return true;
+    }
+
+    fclose(fptr);
+    return false;
+}
+
+bool comprobarExistencia() {
+    FILE *fptr = fopen("metadata.dat", "r");
+    if (fptr) {
+        fclose(fptr);
+        return true;
+    }
+    return false;
 }
