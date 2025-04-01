@@ -86,6 +86,8 @@ void crearArchivoMetadata() {
 }
 
 void altaDeCampo() {
+
+    printf("El primer campo ingresado sera la clave primaria!\n");
     char ch;
     FILE *fptr = fopen("metadata.dat", "a");
 
@@ -143,6 +145,9 @@ void mostrarArchivoMetadata() {
         }
 
         sscanf(lineas[i], "%[^,],%d", data.nombre, &data.longitud);
+        if (i == 0) {
+            printf("<<< CLAVE PRIMARIA >>>\n");
+        }
         printf("Nombre de campo -> %s\n", data.nombre);
         printf("Longitud -> %d\n", data.longitud);
         printf("----------------------------\n");
