@@ -1,3 +1,0 @@
-C:/Users/juani/OneDrive/Documentos/GitHub/BasesDeDatos1-/TP1/cmake-build-debug/CMakeFiles/TP1.dir
-C:/Users/juani/OneDrive/Documentos/GitHub/BasesDeDatos1-/TP1/cmake-build-debug/CMakeFiles/edit_cache.dir
-C:/Users/juani/OneDrive/Documentos/GitHub/BasesDeDatos1-/TP1/cmake-build-debug/CMakeFiles/rebuild_cache.dir
